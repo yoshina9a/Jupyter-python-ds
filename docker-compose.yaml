@@ -1,33 +1,17 @@
-version: "3.9"
+version: "3"
 services:
-  py3:
-    build:
-      context: ./python3
-      dockerfile: Dockerfile
-    restart: always
-    entrypoint: >
-      jupyter-lab
-      --allow-root
-      --ip=0.0.0.0
-      --port=8888
-      --no-browser
-      --NotebookApp.token=''
-      --notebook-dir=/workspace
-    expose:
-      - "8888"
+  notebook:
+    # https://hub.docker.com/r/jupyter/datascience-notebookからimageをpullする
+    image: jupyter/datascience-notebook:python-3.9.7
+    # ポートの設定("ホスト：コンテナ")
     ports:
-      - "127.0.0.1:8888:8888"
+      - "8888:8888"
+    # 環境変数の設定
+    environment:
+      - JUPYTER_ENABLE_LAB=yes
+    # ボリューム(データの永続化の場所)の設定(ホスト:コンテナ)
+    # ホスト内のworkディレクトリとコンテナ内の/home/jovyan/workディレクトリが紐づいているイメージ
     volumes:
-      - ./python3/root_jupyter:/root/.jupyter
-      - ./workspace:/workspace
-
-    # GPUを使う場合の設定
-    # environment:
-    #   - "NVIDIA_VISIBLE_DEVICES=all"
-    #   - "NVIDIA_DRIVER_CAPABILITIES=all"
-    # deploy:
-    #   resources:
-    #     reservations:
-    #       devices:
-    #         - capabilities:
-    #           - gpu
+      - ./workspace:/home/jovyan/work
+    # 最後にjupyterLabに接続するためのコマンドを実行する。
+    command: start-notebook.sh --NotebookApp.token=''
